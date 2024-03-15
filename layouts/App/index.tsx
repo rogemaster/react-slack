@@ -12,7 +12,7 @@ const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
 const App = () => {
-  const { data: userData } = useSWR('http://localhost:3095/api/users', fetcher);
+  const { data: userData } = useSWR('/api/users', fetcher);
   console.log('userData', userData);
 
   return (

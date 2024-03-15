@@ -13,21 +13,16 @@ const Login = () => {
   const [password, onChangePassword] = useInput('');
 
   // 어떤 useSWR의 반환값으로써의 mutate는 해당 useSWR의 key가 이미 바인딩되어 있는 상태이다. 그래서 굳이 key 인자를 넘겨주지 않아도 된다.
-  const { data: userData, mutate, isLoading } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
+  const { data: userData, mutate, isLoading } = useSWR<IUser | false>('/api/users', fetcher);
 
   const onSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setLogInError(false);
       axios
-        // .post(
-        //   '/api/users/login',
         .post(
-          'http://localhost:3095/api/users/login',
+          '/api/users/login',
           { email, password },
-          {
-            withCredentials: true,
-          },
         )
         .then(() => {
           mutate();

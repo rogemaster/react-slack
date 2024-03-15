@@ -16,7 +16,7 @@ const SignUp = () => {
   const [signUpError, setSignUpError] = useState('');
   const [signUpSuccess, setSignUpSuccess] = useState(false);
 
-  const { data: userData, isLoading } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher);
+  const { data: userData, isLoading } = useSWR<IUser | false>('/api/users', fetcher);
 
   const onChangePassword = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +48,7 @@ const SignUp = () => {
 
       axios
         // .post('/api/users', { email, nickName, password })
-        .post('http://localhost:3095/api/users', { email, nickname, password })
+        .post('/api/users', { email, nickname, password })
         .then((response) => {
           setSignUpSuccess(true);
           console.log(response);
