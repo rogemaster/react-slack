@@ -5,11 +5,14 @@ import useSWR from 'swr';
 import { IUser } from '@typings/db';
 import fetcher from '@utils/fetcher';
 import { NavLink } from 'react-router-dom';
+import useSocket from '@hooks/useSocket';
 
 const DMList = () => {
   const [channelCollapse, setChannelCollapse] = useState(false);
   const [onlineList, setOnlineList] = useState<number[]>([]);
   const { workspace } = useParams();
+
+  const [socket] = useSocket(workspace);
 
   const { data: userData, mutate } = useSWR<IUser | false>('/api/users', fetcher);
   const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
@@ -18,6 +21,16 @@ const DMList = () => {
     console.log('DMList: workspace 바꼈다', workspace);
     setOnlineList([]);
   }, []);
+
+  useEffect(() => {
+    socket?.on('onlineList', (data: number[]) => {
+      setOnlineList(data);
+    });
+
+    return () => {
+      socket?.off('onlineList');
+    };
+  }, [socket]);
 
   const toggleChannelCollapse = useCallback(() => {
     setChannelCollapse((prev) => !prev);

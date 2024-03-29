@@ -5,14 +5,19 @@ import { ChangeEvent, Dispatch, SetStateAction, useCallback, useState } from 're
 
 type ReturnType<T = any> = [
   T,
-  (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void,
+  (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => void,
   Dispatch<SetStateAction<T>>,
 ];
 
 const useInput = <T>(initialData: T): ReturnType<T> => {
-  const [value, setValue] = useState(initialData);
-  const handler = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setValue(e.target.value as T);
+  const [value, setValue] = useState<T>(initialData);
+  const handler = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
+    if (typeof e === 'string') {
+      setValue(e as T);
+    } else {
+      setValue(e.target.value as T);
+    }
+
   }, []);
 
   return [value, handler, setValue];
