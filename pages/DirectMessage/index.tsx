@@ -1,5 +1,5 @@
-import React, { FormEvent, useCallback, useEffect, useRef } from 'react';
-import { Container, Header } from '@pages/DirectMessage/style';
+import React, { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { Container, DragOver, Header } from '@pages/DirectMessage/style';
 import gravatar from 'gravatar';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
@@ -15,6 +15,7 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 import useSocket from '@hooks/useSocket';
 
 const DirectMessage = () => {
+  const [dragOver, setDragOver] = useState<boolean>(false);
   const { workspace, id } = useParams<{ workspace: string; id: string }>();
   const scrollbarRef = useRef<Scrollbars | null>(null);
   const [chat, onChangeChat, setChat] = useInput('');
@@ -112,6 +113,42 @@ const DirectMessage = () => {
     [chat, setChat, mutateChat],
   );
 
+  const onDrag = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      if (e.dataTransfer.items) {
+        for (let i = 0; i < e.dataTransfer.items.length; i++) {
+          if (e.dataTransfer.items[i].kind === 'file') {
+            const file = e.dataTransfer.items[i].getAsFile();
+            console.log(file?.name);
+            if (file) {
+              formData.append('image', file);
+            }
+          }
+        }
+      } else {
+        for (let i = 0; i < e.dataTransfer.files.length; i++) {
+          console.log(e.dataTransfer.files[i].name);
+          formData.append('image', e.dataTransfer.files[i]);
+        }
+      }
+
+      axios.post(`/api/workspaces/${workspace}/dms/${id}/images`, formData).then(() => {
+        setDragOver(false);
+        mutateChat();
+      });
+    },
+    [mutateChat, workspace, id],
+  );
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    console.log(e);
+    setDragOver(true);
+  }, []);
+
   if (!userData || !myData) {
     return null;
   }
@@ -119,7 +156,7 @@ const DirectMessage = () => {
   const chatSections = makeSection(chatData ? chatData.flat().reverse() : []);
 
   return (
-    <Container>
+    <Container onDrag={onDrag} onDragOver={onDragOver}>
       <Header>
         <img src={gravatar.url(userData.email, { s: '24px', d: 'retro' })} alt={userData.nickname} />
         <span>{userData.nickname}</span>
@@ -137,6 +174,7 @@ const DirectMessage = () => {
         onChangeChat={onChangeChat}
         placeholder={`Message ${userData.nickname}`}
       />
+      {dragOver && <DragOver>업로드!</DragOver>}
     </Container>
   );
 };
